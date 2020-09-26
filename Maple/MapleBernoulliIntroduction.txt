@@ -1,0 +1,505 @@
+# A companion to the essay
+#     Introduction to the Bernoulli Function
+#               Peter H. N. Luschny
+# 
+# arXiv:2009.06743v1
+# 
+# Happy exploring!
+# Preliminaries
+> # Notational conventions:
+> # =======================
+> # Given a function F, then
+> # Fg := (s,v) -> ...           # is the 'generalized' F function
+> # F  := s -> Fg(s, 1)          # the 'standard' one-parameter form
+> # Fc := s -> Fg(s, 1/2):       # the 'centered' form
+> # Fn := s -> Fg(s, -1/2):      # the 'negated centered' form
+> # Fd := s -> 2^s*(Fc(s)-F(s)): # scaled difference
+> # Fa := s -> ...               # the 'alternating' form 
+> # Fder := s -> ...             # derivative of Fg with respect to s 
+> # Flogder := s -> ...          # logarithmic derivative of Fg
+> # Fx                           # the eXtended version of F (signed)
+> # Fxu                          # the eXtended unsigned version of F
+> with(MmaTranslator[Mma]):
+> with(plots):
+> PREC := 62:
+> 
+> Seq := (f, n) -> seq(f(k), k = 0..n):
+> Req := (f, n) -> seq(convert(Chop(f(k),10^(-20)), rational), k = 0..n):
+> 
+> # Shortcuts for some often needed expansions.
+> poly := p -> sort(expand(p), [x], ascending):
+> polycoeff := p -> seq(coeff(p, x, k), k = 0 .. degree(p, x)):
+> polyratcoeff := p -> 
+> [[seq(numer(coeff(p, x, k)), k = 0..degree(p, x))],
+>  [seq(denom(coeff(p, x, k)), k = 0..degree(p, x))]]:
+> 
+> tau := s -> (2*Pi*I)^(-s) + (-2*Pi*I)^(-s):
+> 
+> # Iverson brackets
+> Iverson := n -> floor(evalhf(n = 0)): 
+> Iverson(0); Iverson(exp(Pi));
+# Jensen formula
+> Jensen := proc(s, v) local f;
+>     f := x -> (v - 1/2 + I*x)^s / (exp(-Pi*x) + exp(Pi*x))^2; 
+>     (2 * Pi) * int(f(x), x = -PREC..PREC);
+>     evalf(%, PREC);
+> end:
+> Jensen(4, 1);
+> 
+> Chop(%, 10^(-20));
+> convert(Chop(%%,10^(-20)), rational);
+> # Demonstration only, not an efficient way to compute!
+> 
+> BernoulliFunction := s -> Jensen(s, 1):
+> BernoulliNumber := n -> BernoulliFunction(n):
+> Req(BernoulliNumber, 14);
+> # Demonstration only, takes considerable time. Reduce PREC first.
+> # Skip at first reading!
+> 
+> BF := plot(BernoulliFunction(s), s = 0..9):
+> BN := pointplot({seq([n, bernoulli(n, 1)], n=0..9)}):
+> display({BF, BN});
+# Bernoulli (synopsis)
+> Bg := (s,v) -> `if`(s = 0, 1, -s*Zeta(0,1-s,v)): # generalized Bernoulli 
+> B  := s -> Bg(s, 1):           # Bernoulli function
+> Bc := s -> Bg(s, 1/2):         # centered Bernoulli function
+> Bn := s -> Bg(s, -1/2):        # Bernoulli function with v = -1/2
+> Bd := s -> 2^s*(Bc(s) - B(s)): # scaled difference, 2^s*(Bg(s, 1/2) - Bg(s, 1)) 
+> Ba := s -> (1 - 2^s)*B(s):     # alternating Bernoulli function
+> seq(print(expand(Bg(k,x)), " ~ ", poly(bernoulli(k,x))),k=0..6); 
+> Seq(B, 14); #numer([%]);denom([%%]);
+> Seq(Bc, 12); #numer([%]);denom([%%]);
+> Seq(Bd, 16);
+> Seq(2*Ba, 16);
+> Seq(Bn, 10); #numer([%]);denom([%%]);
+# Genocchi (synopsis)
+> Gg := (s, x) -> 2^s*(Bg(s, x/2) - Bg(s, (x + 1)/2)): # generalized Genocchi
+> G  := s -> Gg(s, 1):            # Genocchi function
+> Gc := s -> Gg(s, 1/2):          # centered Genocchi function 
+> Gn := s -> Gg(s, -1/2):         # the negated centered Genocchi function
+> Gd := s -> 2^s*(Gc(s) - G(s)):  # scaled difference
+> seq(print(poly(Gg(k,x))),k=0..6); 
+> Seq(G, 16);
+> Seq(Gc, 14); #numer([%]);denom([%%]);
+> Seq(Gn, 12); #numer([%]);denom([%%]);
+> Seq(Gd, 12);
+# Euler (synopsis)
+> Eg := (s,x) -> -Gg(s+1, x)/(s+1): # generalized Euler
+> E  := s -> Eg(s, 1):           # Euler function
+> Ec := s -> 2^s*Eg(s, 1/2):     # centered Euler function
+> En := s -> 2^s*Eg(s, -1/2):    # the negated centered Euler function
+> Ed := s -> 2^s*(Ec(s) - E(s)): # scaled difference
+> seq(print(poly(Eg(k,x)), " ~ ", poly(euler(k,x))),k=0..6);
+> seq(E(k), k=0..13); 
+> seq(euler(k, 1),k=0..13); #numer([%]); denom([%%]);
+> seq(Ec(k), k=0..12);
+> seq(euler(k), k=0..12);
+> seq(2^k*euler(k, 1/2), k=0..12);
+> seq(En(k), k=0..12);
+> seq(2^k*euler(k, -1/2), k=0..12);
+> seq(Ed(n), n=0..11);
+> 
+;
+# The Stieltjes constants
+> for n from 0 to 5 do lprint([n], evalf(gamma(n),20)) od;
+# The Bernoulli constants
+> # The only difference to the Jensen Formula is the 'log' function.
+> beta := proc(s, v) local f;
+>     f := x -> log(v - 1/2 + I*x)^s / (exp(-Pi*x) + exp(Pi*x))^2; 
+>     (2 * Pi) * int(f(x), x = -PREC..PREC);
+>     evalf(%, PREC);
+> end:
+> # For demonstration only, slow.
+> for n from 1 to 5 do lprint([n], 
+> Chop(beta(n, 1), 10^(-20)), evalf(-gamma(n-1)*(n))) od;
+> # Demonstration only, takes considerable time.
+> # Skip when first reading.
+> PREC := 20:
+> plot(beta(s, 1), s = -0.6..4);
+# Integrals for the Bernoulli constants
+> s := n -> add((-1)^k*binomial(n, 2*k)*b(z)^(2*k)*a(z)^(n-2*k), k=0..floor(n/2));
+> F := n -> simplify(expand(s(n))/c(z)^2):
+> for n from 0 to 5 do F(n) od;
+> a := z -> ln(1/4+z^2)/2: 
+> b := z -> arctan(2*z): 
+> c := z -> cosh(Pi*z):
+> for n from 1 to 5 do lprint([n], evalf(Pi*int(F(n), z=0..infinity),24)) od;
+# Special integral formulas
+> # Euler's gamma is Pi times the integral of 
+> # -log((x^2+1/4)^(1/4))*sech(Pi*x)^2 over IR.
+> plot(-log((z^2+1/4)^(1/4))*sech(Pi*z)^2, z=-1..1, numpoints=300);
+# Hurwitz-Bernoulli function
+> L := (s,v) -> -s!*2*(2*Pi)^(-s)*polylog(s, exp(2*Pi*I*v)):
+> L(s, v);
+> 
+> HurwitzBernoulli := (s,v) -> (exp(-I*Pi*s/2)*L(s,v) + exp(I*Pi*s/2)*L(s,1-v))/2:
+> HurwitzBernoulli(s, v);
+> seq(B(n), n=0..12);
+> seq(bernoulli(n, 1), n=0..12);
+> seq(HurwitzBernoulli(n, 1), n=2..12);
+> # Hurwitz formula defined only for s > 1.
+> plot([Bg(s, 1), HurwitzBernoulli(s, 1)], s=0..9, color=[red, blue]);
+> plot([seq(HurwitzBernoulli(2 + k/6, x), k = 0..6)], x = 0..1);
+# The central Bernoulli function
+> # Alternative representations of HurwitzBernoulli(s, 1/2).
+> 
+> u := s -> (2^(1-s) - 4^(1-s))*cos((Pi*s)/2)*Pi^(-s)*GAMMA(s + 1)*Zeta(s);
+> v := s -> 4^(-s)*(2^s-2)*(exp(-(1/2)*I*Pi*s) + exp((I*Pi*s)/2))*Pi^(-s)*s!*Zeta(s);
+> w := s -> s!*(2 - 2^(2-s))*Zeta(s)*cos(s*Pi/2)*(2*Pi)^(-s);
+> y := s -> s!*Zeta(s)*tau(s)*(1 - 2^(1 - s));
+> t := s -> B(s)*(2^(1-s)-1); 
+> #simplify(u(s) - v(s));
+> #simplify(u(s) - w(s));
+> # HurwitzBernoulli(s, 1/2) is the central Bernoulli function.
+> 
+> Bc := (s) -> `if`(s=1, 0, B(s)*(2^(1-s)-1)):
+> Bc(s);
+> # A001896
+> seq(Bc(n), n=0..10);
+> seq(Bg(n, 1/2), n=0..10);
+> seq(bernoulli(n, 1/2), n=0..10);
+> seq(HurwitzBernoulli(n, 1/2), n=0..10);
+> plot([Bg(s, 1/2), Bc(s), HurwitzBernoulli(s, 1/2)], s=0..7, color=[red, blue, black]);
+> plot([B(s), Bc(s)], s=0..11, y=-0.1..1.0, color=[brown, blue]);
+> #shadebetween(B(s), Bc(s), s=0..11, color="Niagara LeafGreen");
+> [seq(B(n)/Bc(n), n=0..23,2)]; numer(%); denom(%%); # A083420
+;
+# The central Bernoulli polynomials
+> # The central Bernoulli numbers.
+> Bcn := n -> 2^n*Bc(n):
+> seq(Bcn(n), n=0..12);
+> # The central Bernoulli polynomials.
+> Bcp := n -> poly(add(binomial(n, k)*Bcn(k)*x^(n-k), k=0..n)):
+> 
+> for n from 0 to 7 do [n], Bcp(n) od;
+> a := n -> polyratcoeff(Bcp(n)): 
+> seq(print(a(n)), n=0..8);
+> # Cf. A157779/A141459, A285866, A335953, see also A336454, A336517.
+> 
+> seq(2^n*Bg(n, 1/2), n=0..12);     # numer([%]);denom([%%]);
+> seq(subs(x=0, Bcp(n)), n=0..12);  # numer([%]);denom([%%]);
+> seq(subs(x=1/2, Bcp(n)), n=0..9); # numer([%]);denom([%%]);
+> seq(subs(x=1, Bcp(n)), n=0..12);  # numer([%]);denom([%%]);
+> a := n -> denom(Bcp(n)): seq(a(n), n=0..16);
+> plot([seq(Bcp(n), n=0..6)], x=-1..1);
+# The Genocchi function
+> for n from 0 to 7 do [n], poly(Gg(n, x)) od;
+> plot(G(x), x=0..7);
+
+# Derivatives of the Bernoulli function
+> # Bernoulli derivative
+> Bder := (s,v) -> `if`(s=0, -gamma, -Zeta(0,1-s,v) + s*Zeta(1,1-s,v)):
+> plot(Bder(x, 1), x=0..8);
+# The logarithmic derivative
+> # Bernoulli logarithmic derivative, provided s not in {3,5,7,...}.
+> Blogder := (s,v) -> `if`(s=0, -gamma, 1/s - Zeta(1,1-s,v) / Zeta(0,1-s,v)): 
+> seq(Blogder(s, 1), s=0..12, 2);
+> plot(Blogder(x, 1), x=-6..6);
+> 
+;
+# Bernoulli cumulants
+> _Bder := s -> diff(B(s),s): _Bder(s);
+>  Bder := s -> -Zeta(1 - s) + s*Zeta(1, 1 - s):
+> _Blogder := s -> -Bder(s)/B(s): expand(_Blogder(s));
+>  Blogder := s -> Zeta(1,1-s,1)/Zeta(1-s) - (1/s):
+> T := k -> taylor(Blogder(s), s=0, k): b :='b':
+> P := k -> subs(seq(gamma(n)=(b(n+1)/(n+1)), n=1..k), gamma=b(1), T(k)): P(3); 
+> seq(print([n], expand(simplify(n!*coeff(P(7),s,n)))), n=0..4);
+# Worpitzky numbers 
+> # A163626, A263634
+> W := (n,k) -> (-1)^k*k!*Stirling2(n+1, k+1):
+> for n from 0 to 6 do seq(W(n,k), k=0..n) od;
+
+> wtrans := a -> proc(n) add(W(n,k)*a(k), k=0..n) end:
+> wa := wtrans(k -> 1/(k+1)):
+> seq(wa(n), n=0..14);
+# Generalized Worpitzky transform
+> WTrans := a -> proc(m) add((-1)^n*binomial(m,n)*x^(m-n)*wtrans(a)(n),n=0..m) end:
+
+> WP := WTrans(k -> 1/(k+1)):
+> seq(print(WP(n), bernoulli(n,x)), n=0..5);
+> seq(subs(x=1, WP(n)), n=0..14);
+> # There are many othernoteworthy examples in the OEIS. 
+> # A000629, A154921
+> WP := WTrans(k -> 2^k):
+> seq(print(WP(n)), n=0..5);
+> seq(subs(x=1, WP(n)), n=0..9);
+# The function tau
+> tau := s -> (2*Pi*I)^(-s) + (-2*Pi*I)^(-s);
+> seq(tau(n), n=-6..8);
+> plot(tau(s), s=-1..3);
+# The Riemann xi Function
+> limit(Pi^(-x/2)*(x - 1)*Zeta(x)*GAMMA(x/2 + 1), x=1); 
+> xi := x -> if x = 1 then 1/2 else 
+>     Pi^(-x/2)*(x - 1)*Zeta(x)*GAMMA(x/2 + 1) fi:
+> 
+> 'xi'(x) = xi(x);
+> seq(xi(n), n=0..9);
+# The functional equation
+> FeqLhs := s -> B(1-s)*(s/2)!*Pi^(-s/2): 
+> FeqRhs := s -> B(s)*((1-s)/2)!*Pi^(-(1-s)/2): 
+> 'B(1-s)*(s/2)!*Pi^(-s/2)' = 'B(s)*((1-s)/2)!*Pi^(-(1-s)/2)';
+> 
+> pl := plot(FeqLhs(s), s=-8..9, color=red, style=point, symbol=asterisk):
+> pr := plot(FeqRhs(s), s=-8..9, color=green):
+> display([pl, pr]);
+> FRhs := s -> xi(s)*Pi^((1-s)/2)/((1-s)/2)!:
+> FLhs := s -> B(s): 
+> 'B(s)' = 'xi(s)*Pi^((1-s)/2)/((1-s)/2)!';
+> 
+> pl := plot(FLhs(s), s=-8..9, color=red, style=point, symbol=asterisk):
+> pr := plot(FRhs(s), s=-8..9, color=green):
+> display([pl, pr]);
+> FRhs := s -> xi(s)*Pi^(s/2)/(s/2)!:
+> FLhs := s -> B(1-s): 
+> 'B(1-s)' = 'xi(s)*Pi^(s/2)/(s/2)!';
+> 
+> pl := plot(FLhs(s), s=-8..9, color=red, style=point, symbol=asterisk):
+> pr := plot(FRhs(s), s=-8..9, color=green):
+> display([pl, pr]);
+> FLhs := s -> B(s)/B(1-s):
+> FRhs := s -> s!*tau(s)/(1-s):
+> FMhs := s -> ((s/2)!/((1-s)/2)!)*Pi^(1/2-s):
+> 
+> 'B(s)/B(1-s)' = '((s/2)!/((1-s)/2)!)*Pi^(1/2-s)';
+> 'B(s)/B(1-s)' = 's!*tau(s)/(1-s)';
+> 
+> pl := plot(FLhs(s), s=-8..8, color=red, style=pointline):
+> pr := plot(FRhs(s), s=-8..8, color=black):
+> pm := plot(FMhs(s), s=-8..8, color=green, style=point, symbol=box):
+> display([pl, pm, pr]);
+> FLhs := s -> (B(s)/B(1-s))*((1-s)/s):
+> FRhs := s -> GAMMA(s)*tau(s):
+> 
+> '(B(s)/B(1-s))*((1-s)/s)' = 'GAMMA(s)*tau(s)';
+> FLhs(s) = FRhs(s);
+> 
+> pl := plot(FLhs(s), s=-8..8, color=red, style=pointline):
+> pr := plot(FRhs(s), s=-8..8, color=black):
+> display([pl, pr]);
+# The Hadamard decomposition
+> seq(B(n) / xi(n) , n=0..16);
+> # A001147, A330797 
+> seq(numer(B(n) / xi(n)), n=0..19, 2);
+> # A097801
+> seq((2*Pi)^(n/2) * B(n) / xi(n), n=0..19, 2);
+# The Riemann Zeros
+> # The Zeta function and the Bernoulli function have the same nontrivial zeros.
+> ZetaZeros := x -> Zeta(0.5 + I*x): 
+> BernZeros := x -> B(0.5 + I*x):
+> Z := f -> plot((Re(f(x)) - Im(f(x)))/x, x=5..80, color=[blue]):
+> Z(ZetaZeros); Z(BernZeros);
+
+> K := f -> plots:-complexplot(f(0.5+t*I), t=0..65, scaling=constrained,
+> numpoints=300, labels=["Re","Im"]):
+> K(Zeta); K(B);
+# The alternating Bernoulli function
+> # Alternating Hurwitz zeta function
+> limit(2^(-s)*(Zeta(0, s, x/2) - Zeta(0, s, (x+1)/2)), s=1); 
+> evalf(subs(x=1, %)); 
+> altZeta := (s, x) -> 2^(-s)*(Zeta(0, s, x/2) - Zeta(0, s, (x+1)/2)):
+> altZeta(s, x);
+# The alternating Bernoulli polynomials
+> # Alternating Bernoulli polynomials
+> altB := n -> -2*n*altZeta(1 - n, x):
+> for n from 1 to 8 do print(poly(altB(n))) od;
+> plot([seq(altB(n), n=1..6)], x=0..1);
+# The Euler function
+> Eg := (s, v) -> -Gg(s+1, v) / (s+1):
+> E := s -> Eg(s, 1):
+> 
+> seq(E(n), n=0..11);
+> seq(print(poly(Eg(n, x)), euler(n,x)), n=0..6); # A060096
+;
+> seq((-2)^s*(Eg(s,1) - Eg(s,1/2)), s=0..12);
+> seq((-2)^s*(Eg(s,1) - Eg(s,1/2))/s!, s=0..11);
+> A1 := s -> (-2)^s*(Eg(s,1) - Eg(s,1/2))/s!:
+> plot([Re(A1(s)), Im(A1(s))], s=0..7, thickness=2);
+# The extended Zeta function
+> ZetaX := z -> Zeta(z) + (Zeta(0, z, 1/4) - Zeta(0, z, 3/4))/(2^z - 2):
+> ZetaX(z);
+> # A193475 & A193476
+> seq(-n*ZetaX(1-n), n = 1..12);
+> seq(denom(-n*ZetaX(1-n)), n = 1..12);
+> # A193475 & A193476
+> seq(-ZetaX(-n), n = 0..10);
+> seq(denom(-ZetaX(-n)), n = 0..10);
+> seq(euler(n), n=0..10);
+> seq(bernoulli(n,1)/n, n=1..10);
+# The extended Bernoulli function
+> # The extended Bernoulli function.
+> # limit(Bx(n), n=0) = 1 + Pi/log(4); Bx(1) = 1
+> 
+> Bx := z -> if z = 0 then 1 + Pi/log(4) else -z*ZetaX(1 - z) fi:
+> Bx(z);
+> plot(Bx(z), z= 0..14.5); 
+> # The extended Bernoulli numbers.
+> # Bxn(0) and Bx(1) by convention in accordance with B(n).
+> 
+> Bxn := n -> if n < 2 then B(n) else Bx(n) fi:
+> seq(Bxn(n), n = 0..9);
+> # Unsigned case by series: A193472/A193473
+> gf := 1 + x*(tan(x) + sec(x)): 
+> ser := series(gf,x,62):
+> Bxser := n -> n!*coeff(ser, x, n)/(4^n - 2^n + Iverson(n)):
+> seq(Bxser(n), n=0..12);
+> seq((n+1)!*Bxser(n), n=0..16,2); # A001332
+;
+> A := n -> I*(I^n*polylog(-n, -I) - (-I)^n*polylog(-n, I)):
+> Bxu := x -> `if`(x=0, -1, x*A(x-1)/(4^x - 2^x)): 
+> Bxuu := x -> 2^(-x)*x*(I^x*polylog(1-x,-I) + (-I)^x*polylog(1-x, I))/(2^x-1):
+> 
+> Bxu(x) = Bxuu(x); evalb(0=simplify(Bxu(x) - Bxuu(x))); 
+> seq(Bxu(n),n=1..10);
+> P := [seq([n, Bxu(n)], n=1..14)]:
+> p := pointplot(P, symbol = soliddiamond, symbolsize = 14, color = [blue]):
+> g := plot(Bxu(x), x=0..14, y=-1..1.2, thickness=2):
+> display([p, g]);
+# The extended Euler function
+> # The extended Euler function
+> Ex := z -> ((4^(z+1) - 2^(z+1))/(z+1)!)*Bx(z+1):
+> 'Ex(z)' = '((4^(z+1) - 2^(z+1))/(z+1)!)*Bx(z+1)';
+> Ex(z);
+
+> plot([Ex(x), Bx(x)], x = 1..13);
+> # The extended Euler numbers
+> Exn := n -> if n = 0 then 1 else Ex(n) fi:
+> seq(Exn(n), n = 0..9);
+> # By series expansion
+> gf := tanh(x) + sech(x):
+> ser := series(gf, x, 32):
+> seq(coeff(ser,x,n), n=0..9);
+> seq(n!*coeff(ser,x,n), n=0..9); 
+> # Interpolating the Euler sec+tan numbers, a.k.a. André numbers.
+> A := n -> I*(I^n*polylog(-n, -I) - (-I)^n*polylog(-n, I)):
+> seq(A(n), n = 0..9);
+> 
+> PX := (n, x) -> (-x)^(n+1)*polylog(-n, x):
+> seq((PX(n, I) + PX(n, -I)), n=0..9);
+> # Eulerian polynomials
+> Eulerian := (n, x) -> add(combinat:-eulerian1(n, k)*x^k, k=0..n-1)/(1+x)^(n-1):
+> seq(Eulerian(n, I), n=0..9);
+> # The Andre function (with positive values for n >= 0).
+> with(plots):
+> p := pointplot([[0, 1], [1, 1], [2, 1], [3,2], [4, 5],[5,16]], 
+> symbol = soliddiamond, symbolsize = 14, color = [blue]):
+> g := plot(A(s), s=-5..5, thickness=2):
+> display([p, g]);
+> A335956 := n -> `if`(n=0, 0, (2^n-1)*2^padic[ordp](n, 2)): 
+> seq((-1)^(n+1)*2*A335956(2*n+2)*Zeta(-2*n-1), n=0..8);
+> A002425 := n -> 2*(-1)^n*A335956(2*n)*Zeta(1-2*n):
+> seq(A002425(n), n=1..9);
+> seq(Bx(n) - Ex(n), n = 0..8); # numer([%]);denom([%%]);
+> plot(Bx(x) - Ex(x), x = -1/2..8);
+# The Swiss-Knife polynomials
+> # It is convenient to set kappa(n, x) = 1 if n < 0.
+> kappa := proc(n, x) local v, k, alpha; if n < 0 then return 1 fi;
+> alpha := k -> `if`(irem(k, 4) = 0, 0, (-1)^iquo(k,4));
+> add(2^iquo(-k,2)*alpha(k+1)*add((-1)^v*binomial(k,v)*(v+x+1)^n,v=0..k),k=0..n) end:
+> 
+> for n from 0 to 7 do expand(kappa(n, x)) od;
+> # Recurrence
+> Kappa := proc(n, z) option remember; local k, p;
+> if n = 0 then 1 else p := irem(n+1, 2);
+> z^n - p + add(`if`(irem(k, 2) = 1, 0,
+> Kappa(k, 0)*binomial(n, k)*(z^(n-k)-p)), k=2..n-1) fi end:
+> 
+> for n from 0 to 7 do expand(Kappa(n, x)) od;
+> plot([seq(kappa(n,x)/n!, n=1..7)], x=-2.5..2.5, y=-3/4..3/4, thickness=2); 
+> # The convention in the OEIS is that the alternate zeros are normally omitted.
+;
+> # A336898 / A336899
+> n42 := n -> `if`(n=0, 1, n/(4^n - 2^n)):
+> seq(n42(n), n=0..9); 
+> seq(numer(n42(n)), n=0..9); 
+> seq(kappa(n,0)/n!, n=0..12);           
+> seq(numer(kappa(n,0)/n!), n=0..12);   #
+> seq(denom(kappa(n,0)/n!), n=0..12);   #
+> 
+> seq(numer(kappa(n,0)/n!), n=0..16,2); # A046976
+> seq(denom(kappa(n,0)/n!), n=0..16,2); # A046977
+;
+> seq(kappa(n,1)/n!, n=0..9);
+> seq(numer(kappa(n,1)/n!), n=0..9); #
+> seq(denom(kappa(n,1)/n!), n=0..9); #
+;
+> seq(kappa(n,1)/n!, n=1..17,2);
+> seq(numer(kappa(n,1)/n!), n=1..19,2); # A002430
+> seq(denom(kappa(n,1)/n!), n=1..19,2); # A036279
+;
+> seq((-1)^floor(n/2)*kappa(n, irem(n,2))/n!, n=0..9);
+> seq(numer((-1)^floor(n/2)*kappa(n, irem(n,2))/n!), n=0..9); # A099612
+> seq(denom((-1)^floor(n/2)*kappa(n, irem(n,2))/n!), n=0..9); # A099617
+;
+> seq(kappa(n,0), n=0..9); # A122045, A000364 
+;
+> seq(kappa(n,1), n=0..9); # A155585
+;
+> seq((-1)^floor(n/2)*kappa(n, irem(n,2)), n=0..9); # A000111
+;
+> seq(kappa(n-1, 1)*n42(n), n=0..9);
+> seq(numer(kappa(n-1, 1)*n42(n)), n=0..9);    # A164555
+> seq(denom(kappa(n-1, 1)*n42(n)), n=0..9);    # A027642
+> seq(denom(kappa(n-1, 1)*n42(n)), n=0..19,2); # A002445
+;
+> seq(kappa(n-1, 0)*n42(n), n=0..9); 
+> seq(numer(kappa(n-1, 0)*n42(n)), n=0..9);    #
+> seq(denom(kappa(n-1, 0)*n42(n)), n=0..9);    #
+> seq(numer(kappa(n-1, 0)*n42(n)), n=1..9,2);  # A009843
+> seq(denom(kappa(n-1, 0)*n42(n)), n=1..17,2); # A193476
+;
+> seq(kappa(n-1, irem(n-1,2))*n42(n), n=0..9); 
+> seq(numer(kappa(n-1, irem(n-1,2))*n42(n)), n=0..9); # A193472
+> seq(denom(kappa(n-1, irem(n-1,2))*n42(n)), n=0..9); # A193473
+;
+> seq(kappa(n, 0)*(n+1), n=0..9,2); # A009843
+> seq(kappa(n, 1)*(n+1), n=1..9,2); # A009752
+;
+> seq(kappa(n, -1)*(n+1)/2^n, n=0..9); # A036968
+;
+> seq(kappa(n, 1/2)*2^n, n=0..9);      # A188458
+;
+> seq(igcd(coeffs(expand(kappa(i,x) - x^i))), i=1..80);
+> A155457 := proc(n) local lcm; 
+> lcm := n -> ilcm(seq(i, i=1..n)); 
+> if type(n, even) then 1 else lcm(n)/lcm(n-1) fi end:
+> seq(A155457(n), n=1..80);
+# Asymptotics for the Bernoulli numbers
+> # For even positive integer n:
+> Bnasy := s -> -(-1)^binomial(s,2)*4*Pi*((s/(2*Pi*exp(1)))^(s+1/2)*
+> exp(1/2+s^(-1)/12-s^(-3)/360+s^(-5)/1260)):
+> Bnasy(s);
+> # In the logarithmic form:
+> LogBnasy := proc(n) (1/2+n)*ln(n)+(1/2-n)*ln(Pi)+(3/2-n)*ln(2)
+> -n*(1-1/(12*n^2)*(1-1/(30*n^2)*(1-2/(7*n^2)))) end:
+> 
+> LogBnasy(x);
+> plot([abs(Bnasy(x)), abs(B(x))], x=1..13);
+> EddValid := n -> -log10(abs(1.0 - (abs(Bnasy(n)/(bernoulli(n)))))):
+> EddPromised := n -> 3*ln(3*n):
+> 
+> for n from 6 to 11 do N := 2^n: 
+> lprint(evalf(Bnasy(N)/bernoulli(N), 35));
+> printf("n = %d, Promised: %2.3f, Returned valid decimal digits: %2.3f\n", 
+> N, evalf(EddPromised(N),32), evalf(EddValid(N), 32)) od:
+> # For general s > 0 the asymptotic expansion is:
+> Basy := s -> -4*Pi*cos(s*Pi/2)*(s/(2*Pi*exp(1)))^(s+1/2)*
+> exp(1/2 + add((B(n+1)/(n+1))*(s^(-n)/n), n=1..5)):
+> Basy(s);
+# Generating functions
+> # The Todd function
+> gf := z / (1 - exp(-z));
+> ser := series(gf, z, 20):
+> seq(n!*coeff(ser, z, n), n=0..16);
+# Plots
+> with(plots):
+# 2D
+> plot([B(s)/xi(s), xi(s)], s=0..8, y=-0.1..2); 
+# 3D
+> complexplot3d(log(B(z)), z = 1/2 - 32*I .. 6.99 + 32*I);
+> complexplot3d(log(B(z)/(1-2^z)), z = 1/2 - 32*I .. 6.99 + 32*I);
+> # complexplot3d(log(Bc(z)), z = 1/2 - 32*I .. 0.99 + 32*I);
+> complexplot3d(log(xi(z)), z = 1/2 - 32*I .. 12.99 + 32*I);
+> complexplot3d(log(A(z)), z = 0 - 12*I .. 12 + 12*I);
+> 
+;
