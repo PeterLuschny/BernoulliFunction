@@ -1,4 +1,4 @@
-<img src="https://github.com/https://github.com/PeterLuschny/BernoulliFunction/blob/master/Asymptote/TheBernoulliFunction.jpg">
+<img src="https://github.com/PeterLuschny/BernoulliFunction/blob/master/Asymptote/TheBernoulliFunction.jpg">
 
 A companion to the essay
 # An Introduction to the Bernoulli Function
@@ -10,7 +10,7 @@ Here you can find source code:
 
 ## Maple worksheet (No Maple required to read!)
 
-* [In text-format, without output](https://github.com/PeterLuschny/BernoulliFunction/Maple/blob/master/MapleBernoulliIntroduction.txt "Maple worksheet without output").
+* [In text-format, without output](https://github.com/PeterLuschny/BernoulliFunction/tree/master/Maple/MapleBernoulliIntroduction.txt "Maple worksheet without output").
 
  * [In pdf-format with output](http://luschny.de/math/zeta/MapleBernoulliIntroduction.pdf "Maple worksheet with output").
 
