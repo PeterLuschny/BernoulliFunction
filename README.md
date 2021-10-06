@@ -4,7 +4,7 @@ A companion to the essay
 # An Introduction to the Bernoulli Function
 
 * In the [arXiv](https://arxiv.org/abs/2009.06743 "arXiv:2009.06743").
-* As a [WebPage](http://luschny.de/math/zeta/BernoulliFunctionIntroduction.html): Introduction to the Bernoulli function (version 1).
+* As a [WebPage](http://luschny.de/math/zeta/BernoulliFunctionIntroduction.html): Introduction to the Bernoulli function.
 
 Here you can find source code:
 
